@@ -1,6 +1,6 @@
 import telebot
 from telebot import types
-from api import token
+from config import token, adminuser, chunnelid
 
 # TODO убрать токен в другой файл
 # TODO добавить кнопки на акции и их описание, по дням недели
@@ -11,7 +11,7 @@ from api import token
 bot = telebot.TeleBot(token)
 
 """Обработчик команд"""
-@bot.message_handler(commands=['start', 'site', 'ivent'])
+@bot.message_handler(commands=['start', 'site', 'ivent', 'info', 'admin'])
 def main(message):
     if message.text == '/start':
         bot.send_message(message.chat.id, f'Привет, {message.from_user.username}')
@@ -27,7 +27,24 @@ def main(message):
         """markup.add(types.InlineKeyboardButton())"""
         bot.send_message(message.chat.id, 'Сейчас расскажу про акции, выбери день'
                                           'в который хочешь к нам заглянуть?')
+    elif message.text == '/info':
+        bot.send_message(message.chat.id, message)
 
+    elif message.text == '/admin':
+        if str(message.from_user.id) in adminuser:
+            markup = types.InlineKeyboardMarkup()
+            markup.add(types.InlineKeyboardButton("Подготовить посты в группу", callback_data='sendler'))
+            markup.add(types.InlineKeyboardButton("Редактировать мероприятия", callback_data='edit'))
+            bot.send_message(message.chat.id, 'Приветсвую Мастер!\nЧто вы хотите сделать?', reply_markup=markup)
+        else:
+            bot.send_message(message.chat.id, 'В доступе отказано!')
+
+@bot.callback_query_handler(func=lambda callback: True)
+def callback_admin(callback):
+    if callback.data == 'sendler':
+        bot.send_message(chat_id=chunnelid, text='Привет')
+    elif callback.data == 'edit':
+        bot.send_message(chat_id=chunnelid, text='Пока что нечего редактировать')
 
 """Бесконечный цикл работы"""
 bot.polling(none_stop=True)
