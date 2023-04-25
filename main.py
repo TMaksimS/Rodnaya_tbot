@@ -39,6 +39,7 @@ def main(message):
         else:
             bot.send_message(message.chat.id, 'В доступе отказано!')
 
+# Обработчик админ запросов
 @bot.callback_query_handler(func=lambda callback: True)
 def callback_admin(callback):
     if callback.data == 'sendler':
@@ -46,5 +47,6 @@ def callback_admin(callback):
     elif callback.data == 'edit':
         bot.send_message(chat_id=chunnelid, text='Пока что нечего редактировать')
 
-"""Бесконечный цикл работы"""
-bot.polling(none_stop=True)
+# Бесконечный цикл работы
+if __name__ == '__main__':
+    bot.polling(none_stop=True)
