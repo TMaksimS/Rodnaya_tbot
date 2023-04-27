@@ -7,14 +7,12 @@ import json
 
 def get_wall_post():
     # Функция получает крайние 10-ть постов из домена и записывает их в .json
-    url = f'https://api.vk.com/method/wall.get?domain={vk["domain"]}&count=10&access_token={vk["access_token"]}&v={vk["ver"]}'
+    url = f'https://api.vk.com/method/wall.get?domain={vk["domain"]}&count=20&access_token={vk["access_token"]}&v={vk["ver"]}'
     req = requests.get(url)
     src = req.json()
 
     # Прверяем существует ли дирректория с именем группы
-    if os.path.exists(f'{vk["domain"]}'):
-        print(f'Директория с именем {vk["domain"]} уже существует!')
-    else:
+    if not os.path.exists(f'{vk["domain"]}'):
         os.mkdir(vk["domain"])
 
     # Сохраняем данные в .json
@@ -30,50 +28,58 @@ def get_content_posts():
 
     for post in posts:
         post_id = post["id"]
-        post_text = post["text"]
-        # print(f"ОТправляем пост с ID {post_id}")
-        try:
-            post = post['attachments']
-            photos_url = []
-            videos_url = []
 
-            if len(post) >= 1:
-                for i in range(len(post)):
-                    if post[i]['type'] == 'photo':
-                        get_photo = post[i]['photo']['sizes'][3]['url']
-                        photos_url.append(get_photo)
-                    elif post[i]['type'] == 'video':
+        if not os.path.exists(f"{vk['domain']}/{post_id}"):
+            os.mkdir(f"{vk['domain']}/{post_id}")
+
+        post_text = post["text"]
+        copy_text(post_id, post_text)
+        post = post['attachments']
+        counter_jpg = 0
+        counter_mp4 = 0
+        if len(post) >= 1:
+            for i in range(len(post)):
+                if post[i]['type'] == 'photo':
+                    get_photo = post[i]['photo']['sizes'][3]['url']
+                    download_photos(get_photo, post_id, counter_jpg)
+                    counter_jpg += 1
+                elif post[i]['type'] == 'video':
+                    video_duration = post[i]["video"]['duration']
+                    if video_duration <= 300:
                         video_post_id = post[i]["video"]['id']
                         video_owner_id = post[i]["video"]['owner_id']
                         video_get_url = f"https://vk.com/video{video_owner_id}_{video_post_id}"
-                        videos_url.append(video_get_url)
-            else:
-                pass
-
-
-            print(f"{post_id} ID post have a {len(post)} attachments\nphotos:{photos_url}\nvideos:{videos_url}",
-                      end='**\n\n**')
-        except Exception:
-            print(f"Что то пошло не так! с постом ID {post_id}!")
-
-    # Проверка, если файла не существует значит это первый парсинг группы.
-    # Отправляем все новые посты
-    # Иначе осуществляем проверку и отправляем только новые посты
-    #
-    # if not os.path.exists(f'{vk["domain"]}/exist_posts_{vk["domain"]}.txt'):
-    #     print("Файла с ID постов не существует, создаем файл")
-    #     with open(f'{vk["domain"]}/exist_posts_{vk["domain"]}.txt', 'w') as file:
-    #         for item in fresh_posts_id:
-    #             file.write(str(item) + '\n')
-    # else:
-    #      print("Файл с ID постов существует, начинаем выборку свежих постов")
+                        saved_videos(video_get_url, post_id, counter_mp4)
+                        counter_mp4 += 1
 
 
 
+def download_photos(url, post_id, counter_jpg):
+    # Функция для загрузки постов
+    res = requests.get(url)
+    # Создаем папку group_name/photos
+    if not os.path.exists(f'{vk["domain"]}/{post_id}/photos'):
+        os.mkdir(f'{vk["domain"]}/{post_id}/photos')
+    with open(f'{vk["domain"]}/{post_id}/photos/{post_id}photo{counter_jpg}.jpg', "wb") as img_file:
+        img_file.write(res.content)
 
 
+def saved_videos(url, post_id, counter_mp4):
+    # Функция для записи url video
+    # Создаем папку group_name/videos
+    if not os.path.exists(f"{vk['domain']}/{post_id}/video"):
+        os.mkdir(f"{vk['domain']}/{post_id}/video/")
+    with open(f"{vk['domain']}/{post_id}/video/{post_id}url_video{counter_mp4}.txt", "w") as url_file:
+        url_file.write(url)
 
 
+def copy_text(post_id, post_text):
+    # Функция копирования текста из поста
+    # создаем папку group_name/text
+    if not os.path.exists(f"{vk['domain']}/{post_id}/text"):
+        os.mkdir(f"{vk['domain']}/{post_id}/text")
+    with open(f'{vk["domain"]}/{post_id}/text/{post_id}_text.txt', "w", encoding='utf-8') as text_file:
+        text_file.write(post_text)
 
 get_wall_post()
 get_content_posts()

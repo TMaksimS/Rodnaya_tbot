@@ -1,10 +1,9 @@
 import telebot
 from telebot import types
 from config import token, adminuser, chunnelid
+from parcer import *
 
-# TODO убрать токен в другой файл
-# TODO добавить кнопки на акции и их описание, по дням недели
-# TODO определиться с БД и ее использованием для акций 
+# TODO определиться с БД и ее использованием для акций
 # TODO изучить вопрос публикации постов в группе через бота
 # TODO парсить профиль в инстаграмме и на его основе создавать посты в группу
 
@@ -33,7 +32,9 @@ def main(message):
     elif message.text == '/admin':
         if str(message.from_user.id) in adminuser:
             markup = types.InlineKeyboardMarkup()
-            markup.add(types.InlineKeyboardButton("Подготовить посты в группу", callback_data='sendler'))
+            markup.add(types.InlineKeyboardButton("Загрузить посты из группы вк", callback_data='download'))
+            markup.add(types.InlineKeyboardButton("Сверить наличие новых постов", callback_data='parse'))
+            markup.add(types.InlineKeyboardButton("Подготовить новые посты в группу", callback_data='sendler'))
             markup.add(types.InlineKeyboardButton("Редактировать мероприятия", callback_data='edit'))
             bot.send_message(message.chat.id, 'Приветсвую Мастер!\nЧто вы хотите сделать?', reply_markup=markup)
         else:
@@ -44,6 +45,9 @@ def main(message):
 def callback_admin(callback):
     if callback.data == 'sendler':
         bot.send_message(chat_id=chunnelid, text='Привет')
+    # elif callback.data == 'download':
+    #     get_wall_post()
+    #     get_content_posts()
     elif callback.data == 'edit':
         bot.send_message(chat_id=chunnelid, text='Пока что нечего редактировать')
 
