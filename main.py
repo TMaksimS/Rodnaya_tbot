@@ -10,6 +10,7 @@ import time
 bot = telebot.TeleBot(token)
 
 
+
 @bot.message_handler(commands=['start', 'site', 'ivent', 'info', 'admin'])
 def main(message):
     # Обработчик команд
@@ -25,11 +26,11 @@ def main(message):
     elif message.text == '/ivent':
         bot.send_message(message.chat.id, 'Сейчас расскажу про акции, выбери день'
                                           'в который хочешь к нам заглянуть?')
-
+    elif message.text == '/info':
+        bot.send_message(message.chat.id, message)
     # Отправка .json обьекта с информацией о пользователе
     elif message.text == '/info':
         bot.send_message(message.chat.id, message)
-
     # Вызов админ панели
     elif message.text == '/admin':
         if str(message.from_user.id) in adminuser:
@@ -40,6 +41,7 @@ def main(message):
             bot.send_message(message.chat.id, 'Приветсвую Мастер!\nЧто вы хотите сделать?', reply_markup=markup)
         else:
             bot.send_message(message.chat.id, 'В доступе отказано!')
+
 
 
 @bot.message_handler()

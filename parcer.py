@@ -4,9 +4,11 @@ import os
 import json
 
 
+
 def get_wall_post():
     # Функция получает крайние 10-ть постов из домена и записывает их в .json
     url = f'https://api.vk.com/method/wall.get?domain={vk["domain"]}&count=10&access_token={vk["access_token"]}&v={vk["ver"]}'
+
     req = requests.get(url)
     src = req.json()
 
@@ -118,4 +120,3 @@ def check_new_posts():
     else:
         message = 'Не найдено новых постов'
         return message
-
